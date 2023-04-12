@@ -1,39 +1,47 @@
-import pygame, numpy
-import player
+import pygame
+import numpy
+import sys
 
-def draw_block(block: pygame.sprite.DirtySprite, size: int):
-        if type(block.struct[0]) == numpy.ndarray:
-            width = len(block.struct[0]) * size
-        else:
-            width = size
-        if type(block.struct) == numpy.ndarray:
-            height = len(block.struct) * size
-        else:
-            height = size
-        block.image = pygame.surface.Surface([width, height])
-        block.image.set_colorkey((0, 0, 0))
-        # Position and size
-        block.rect = pygame.Rect(0, 0, width, height)
-        for y, row in enumerate(block.struct):
-            if type(row) == numpy.ndarray:
-                for x, col in enumerate(row):
-                    if col:
-                        pygame.draw.rect(
-                            block.image,
-                            block.color,
-                            pygame.Rect(x*size + 1, y*size + 1,
-                                size - 2, size - 2)
-                        )
-            else:
-                pygame.draw.rect( block.image, block.color,
-                            pygame.Rect(size + 1, y*size + 1,
-                                size - 2, size - 2)
-                        )
+import player
+from block import Block
+from board import Board
 
 def main():
     main_player = player.Player((255, 0, 0), "TEST 1")
+    dummy_player = player.Player((0, 72, 186), "TEST 2")
+    block: Block
     for block in main_player.blocks:
-        draw_block(block, 10)
+        for _ in range(4):
+            block.rotate()
+        block.flip()
+        for _ in range(4):
+            block.rotate(clockwise=False)
+
+    board = Board(14)
+    block = main_player.blocks[-4]
+    print(block)
+
+    # bool_array = numpy.array(block.struct, dtype=bool)
+    # print(numpy.where(numpy.pad(~bool_array, ((0, 11), (0, 11)), constant_values=True), board.board, 5))
+
+    board.add_block(main_player.id, main_player.blocks[-4], (1,1))
+    print(board)
+    board.add_block(main_player.id, main_player.blocks[-3], (5,6))
+    print(board)
+    board.add_block(dummy_player.id, dummy_player.blocks[-8], (10,10))
+    print(board)
+
+    # index = (1,2)
+    # print(board.board[index[0],index[1]])
+    # chunk, location = board.view_chunk(block, index)
+    # print(chunk)
+    # print(location)
+    # print(f"location size: {location.shape} vs Block size: {block.shape}")
+    # if location.shape[0] < block.shape[0] or location.shape[1] < block.shape[1]:
+    #     print(f"Cannot place block")
+    #     sys.exit(1)
+    # print(numpy.where(numpy.array(block.struct, dtype=bool), location, 0).sum())
+    # print(block.center_index)
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,7 @@
 import pygame, sys
 from pygame.locals import *
+import logging
+
 from constants import *
 from board import Board
 from player import Human, Computer
@@ -15,12 +17,11 @@ class Game:
         elif players > 2 and players < 5:
             self.board = Board(20)
         else:
-            print("Invalid player count need to select between 2-4")
-            raise ValueError
+            raise ValueError("Invalid player count need to select between 2-4")
 
         self.players = []
         for i in range(players):
-            self.players.append(Human(PLAYER_COLORS[i], f"CPU {i+1}"))
+            self.players.append(Human(PLAYER_COLORS[i], f"Player {i+1}"))
 
         if display:
             self.screen = GameScreen(self)
@@ -43,10 +44,10 @@ class Game:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
-                    print(f"Clicked at {pos}")
+                    logging.debug(f"Clicked at {pos}")
                     block = self.players[0].block_clicked(pos)
                     if block:
-                        print(f"Clicked on block...\n{block.struct}")
+                        logging.debug(f"Clicked on block...\n{block.struct}")
 
                 # Processing
                 # This section will be built out later
