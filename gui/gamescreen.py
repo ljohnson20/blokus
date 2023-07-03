@@ -1,9 +1,18 @@
-import pygame, numpy
+import pygame
 from constants import *
 
-class GameScreen:
+from game import Game
+from gui_player import GuiPlayer
 
-    def __init__(self, game) -> None:
+# Biggest challenge is scaling for different screen sizes - via inits and pygame.display.get_surface().get_size()
+# Do we redraw everything on updates or can we control what is redrawn?
+
+# Every subclass (player, board, block) should provide a surface or sprite that can be blit in a location
+# Docs - Blitting is one of the slowest operations in any game, so you need to be careful not to blit too much onto the screen in every frame
+
+# Need to provide a winner surface to display on gameover
+class GameScreen:
+    def __init__(self, game: Game) -> None:
         self.game_data = game
 
         if len(game.players) > 2:
@@ -18,6 +27,10 @@ class GameScreen:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.background = self.create_background().convert()
 
+        self.gui_players = []
+        for player in game.players:
+            self.gui_players.append(GuiPlayer(player))
+
         self.update_screen()
 
     @property
@@ -31,9 +44,19 @@ class GameScreen:
         return h_center - self.game_data.board.board_size // 2 * self.tile_size
 
     def update_screen(self):
+        # If it's the first update draw everything
+
+        # If it's a player turn
+        # Update game board
+
+        # Update current player
+
+
+
         # Draw background and grid.
         self.screen.blit(self.background, (0, 0))
-        for player_surface in self.player_surfaces:
+        for gui_player in self.gui_players:
+            player_surface = gui_player.player_surface
             player_surface.update()
             self.screen.blit(player_surface.surface, player_surface.corner_cords)
         # Update
@@ -85,59 +108,3 @@ class GameScreen:
 
             self.player_surfaces.append(PlayerSurface(player, (player_width - 10, player_hight - 40), 
                                                     (flip_sides + 15, player_start + 30)))
-    
-    @staticmethod
-    def draw_block(block: pygame.sprite.DirtySprite, size: int):
-        if type(block.struct[0]) == numpy.ndarray:
-            width = len(block.struct[0]) * size
-        else:
-            width = size
-        if type(block.struct) == numpy.ndarray:
-            height = len(block.struct) * size
-        else:
-            height = size
-        block.image = pygame.surface.Surface([width, height])
-        block.image.set_colorkey((0, 0, 0))
-        for y, row in enumerate(block.struct):
-            if type(row) == numpy.ndarray:
-                for x, col in enumerate(row):
-                    if col:
-                        pygame.draw.rect(
-                            block.image,
-                            block.color,
-                            pygame.Rect(x*size + 1, y*size + 1,
-                                size - 2, size - 2)
-                        )
-            else:
-                pygame.draw.rect( block.image, block.color,
-                            pygame.Rect(1, y*size + 1,
-                                size - 2, size - 2)
-                        )
-
-class PlayerSurface:
-
-    def __init__(self, player, dimensions: tuple, corner_cords: tuple) -> None:
-        self.surface = pygame.Surface(dimensions)
-        self.surface.fill(BG_COLOR)
-        self.corner_cords = corner_cords
-        self.player = player
-            
-    def update(self):
-        draw_x, draw_y = 5, 5
-        max_y = 0
-        for block in self.player.blocks:
-            GameScreen.draw_block(block, 15)
-            move_x, move_y = block.image.get_size()
-            if move_y > max_y:
-                max_y = move_y
-            if draw_x + move_x > self.surface.get_size()[0]:
-                draw_x = 5
-                draw_y += max_y + 8
-                max_y = 0
-            self.surface.blit(block.image, (draw_x, draw_y))
-            # Update block rectangle
-            block.rect = block.image.get_rect()
-            draw_x += move_x + 5
-            
-            
-

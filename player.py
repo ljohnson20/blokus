@@ -6,11 +6,11 @@ from block import Block
 from board import Board
 
 class Player:
-    newid = itertools.count(1).__next__
+    uid = itertools.count(1)
 
     def __init__(self, color, title) -> None:
         # Need unique incremental ID for marking squares on board
-        self.id = Player.newid()
+        self.id = next(Player.uid)
 
         self.color = color
         self.title = title
@@ -39,6 +39,11 @@ class Player:
         for block in self.blocks:
             total += block.points
         return total
+    
+    # boolean to see if player is human or not
+    @property
+    def is_human(self) -> bool:
+        return type(self) == Human
 
 class Human(Player):
 
